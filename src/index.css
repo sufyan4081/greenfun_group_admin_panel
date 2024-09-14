@@ -1,0 +1,86 @@
+/* @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap"); */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
+
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root,
+.app,
+.content {
+  height: 100%;
+  width:100%;
+  font-family: "Montserrat", sans-serif;
+}
+
+body{
+  margin-top: 110px;
+}
+
+.green-color-primary{
+    background-color: #16e500 !important;
+    color: white;
+}
+
+.green-color-secondary{
+    background-color: #00a859 !important;
+    color: white;
+}
+
+.custom_link{
+  text-decoration: none;
+  color: white;
+  text-align: left;
+}
+
+.t_software_link{
+  font-weight: "bold !important";
+   color: "blue"
+}
+
+.galleryCardImg {
+  width: 100%; 
+  object-fit: contain;
+  transition: transform 0.8s ease-in-out; 
+}
+
+.galleryCardImg:hover {
+  transform: scale(1.1); 
+}
+
+.focusAreaCardImg {
+  width: 100%; 
+  height: 255px;
+  object-fit: cover;
+  transition: transform 0.8s ease-in-out; 
+}
+
+.focusAreaCardImg:hover {
+  transform: scale(1.1); 
+}
+
+.foundingBodyCard {
+  width: 180px; 
+  height: 200px;
+  margin-bottom: 3;
+  box-shadow: "0px 4px 10px rgba(0, 0, 0, 0.5)";
+}
+
+.foundingBodyCard:hover{
+  box-shadow: "0px 6px 15px rgba(0, 0, 0, 0.3)"
+}
+
+.foundingBodyImg {
+  width: 100%; 
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s ease-in-out; 
+}
+
+.foundingBodyImg:hover {
+  transform: scale(1.1); 
+}
