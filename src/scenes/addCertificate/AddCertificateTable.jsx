@@ -15,7 +15,6 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import "bootstrap/dist/css/bootstrap.min.css";
 import DownloadButton from "../../components/downloadButton/DownloadButton";
 import SearchForm from "../../components/SearchForm";
@@ -65,7 +64,6 @@ const AddCertificateTable = ({ certificateData, allData }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const defaultVisibleColumns = ["Title", "Code", "Image", "Actions"];
   const [visibleColumns, setVisibleColumns] = useState(defaultVisibleColumns);
-  const isSmallScreen = useMediaQuery((theme) => theme.breakpoints.down("sm"));
   const queryClient = useQueryClient();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedFormData, setSelectedFormData] = useState(null);
