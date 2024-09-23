@@ -1,83 +1,137 @@
 import { useFormik } from "formik";
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { InputForm } from "../../components/InputForm";
-import ChooseFileComp from "../../components/ChooseFile/ChooseFileComp";
 import FormButton from "../../components/FormButton/FormButton";
-// import { useSnackbar } from "notistack";
 import * as Yup from "yup";
-// import { useQueryClient } from "@tanstack/react-query";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect } from "react";
 import ChooseMultipleVideo from "../../components/ChooseFile/ChooseMultipleVideo";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createVlog, EditVlog } from "../../api/Vlog/vlog_api";
+import { QueryKeys } from "../../utils/QueryKey";
+import { Slide, toast } from "react-toastify";
+import CloseIcon from "@mui/icons-material/Close";
+import { closeSnackbar, enqueueSnackbar } from "notistack";
+import { format } from "date-fns";
 
 const initialValues = {
   headerTitle: "",
   date: "",
   videos: [],
-  videoLink: [],
+  url: [],
 };
 
 const AddVlogForm = ({ formData }) => {
   const [selectedFile, setSelectedFileName] = useState("");
 
-  // // notistack
-  // const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   // post the data
-  // const createPostMutation = useMutation(createVlog, {
-  //   onSuccess: (data) => {
-  //     queryClient.invalidateQueries({ queryKey: QueryKeys.vlog });
+  const createPostMutation = useMutation({
+    mutationFn: createVlog,
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.vlog });
 
-  //     enqueueSnackbar("Vlog Added Successfully", {
-  //       variant: "success",
-  //       anchorOrigin: { vertical: "top", horizontal: "center" },
-  //       action: (key) => (
-  //         <Button onClick={() => closeSnackbar(key)} color="success">
-  //           <CloseIcon />
-  //         </Button>
-  //       ),
-  //     });
-  //     handleReset();
-  //   },
-  //   onError: (error) => {
-  //     enqueueSnackbar(" An error occurred while adding the new vlog", {
-  //       variant: "error",
-  //       anchorOrigin: { vertical: "top", horizontal: "center" },
-  //       action: (key) => (
-  //         <Button onClick={() => closeSnackbar(key)} sx={{ color: "white" }}>
-  //           <CloseIcon />
-  //         </Button>
-  //       ),
-  //     });
-  //   },
-  // });
+      enqueueSnackbar("Vlog Added Successfully", {
+        variant: "success",
+        anchorOrigin: { vertical: "top", horizontal: "center" },
+        action: (key) => (
+          <Button onClick={() => closeSnackbar(key)} color="success">
+            <CloseIcon />
+          </Button>
+        ),
+      });
+      handleReset();
+    },
+    onError: (error) => {
+      enqueueSnackbar("An error occurred while adding the new vlog", {
+        variant: "error",
+        anchorOrigin: { vertical: "top", horizontal: "center" },
+        action: (key) => (
+          <Button onClick={() => closeSnackbar(key)} color="success">
+            <CloseIcon />
+          </Button>
+        ),
+      });
+    },
+  });
 
   const validationSchema = Yup.object({
-    headerTitle: Yup.string().required("Header title is required"),
-    date: Yup.string().required("Please select date"),
+    headerTitle: Yup.string().required("Enter logger name"),
+    date: Yup.string().required("Please select a date"),
     videos: Yup.array()
       .of(Yup.mixed())
       .test("is-mp4", "Only MP4 files are supported.", (value) => {
         // Ensure all files are MP4 format
         return value.every((file) => {
-          // Check if the file is of MP4 format
           return file && file.type === "video/mp4";
         });
-      }),
+      })
+      .required("Please upload at least one video"),
   });
-
   const onSubmit = async (values) => {
-    alert("Data is submitted successfully");
+    try {
+      if (!formData) {
+        formData = new FormData(); // Change const to formData
+
+        formData.append("headerTitle", values.headerTitle);
+        formData.append("date", values.date);
+
+        if (values.url.length === 0) {
+          formData.append("url", []);
+        } else {
+          formData.append("url", values.url);
+        }
+
+        if (values?.videos) {
+          values.videos.forEach((file) => {
+            formData.append("videos", file);
+          });
+        }
+        await createPostMutation.mutateAsync(formData);
+        handleReset();
+      } else {
+        const _id = values._id.toString();
+        await EditVlog(_id, values);
+        queryClient.invalidateQueries({ queryKey: QueryKeys.vlog });
+        enqueueSnackbar("Vlog Updated Successfully", {
+          variant: "success",
+          anchorOrigin: { vertical: "top", horizontal: "center" },
+          action: (key) => (
+            <Button onClick={() => closeSnackbar(key)} color="success">
+              <CloseIcon />
+            </Button>
+          ),
+        });
+      }
+    } catch (error) {
+      console.error("Error while adding/updating the data:", error);
+      enqueueSnackbar("An error occurred while adding the new vlog", {
+        variant: "error",
+        anchorOrigin: { vertical: "top", horizontal: "center" },
+        action: (key) => (
+          <Button onClick={() => closeSnackbar(key)} color="success">
+            <CloseIcon />
+          </Button>
+        ),
+      });
+    }
   };
 
   const formik = useFormik({
     onSubmit,
     initialValues,
     validationSchema,
-    validateOnMount: true,
+    validateOnMount: false, // Don't validate on mount
+    validateOnBlur: true, // Validate when fields are blurred
+    validateOnChange: false, // Optionally, set to false to only validate on submit/blur
   });
 
   const {
@@ -96,9 +150,11 @@ const AddVlogForm = ({ formData }) => {
       setValues({
         _id: formData?._id || "",
         headerTitle: formData?.headerTitle || "",
-        date: formData?.date || "",
+        date: formData?.date
+          ? format(new Date(formData.date), "yyyy-MM-dd")
+          : "",
         videos: formData?.videos || [],
-        videoLink: formData?.videoLink || [],
+        url: formData?.url || [],
       });
     }
   }, [formData, setFieldValue, setValues]);
@@ -109,22 +165,62 @@ const AddVlogForm = ({ formData }) => {
   };
 
   const addVideo = () => {
-    setFieldValue("videoLink", [...values.videoLink, []]); // Append an empty array
+    setFieldValue("url", [...values.url, []]); // Append an empty array
   };
 
   // remove options button
   const removeVideo = (index) => {
-    const newVideos = [...values.videoLink];
+    const newVideos = [...values.url];
     newVideos.splice(index, 1);
-    setFieldValue("videoLink", newVideos);
+    setFieldValue("url", newVideos);
   };
 
   const handleChangeOptions = (e, index, field) => {
-    const newVideos = [...values.videoLink];
+    const newVideos = [...values.url];
     // Ensure that e.target.value is a string, otherwise set it to an empty string
     const newValue = typeof e.target.value === "string" ? e.target.value : "";
     newVideos[index] = newValue;
-    setFieldValue("videoLink", newVideos);
+    setFieldValue("url", newVideos);
+  };
+
+  const type = "date";
+
+  const handleSubmitWithValidation = async () => {
+    // Trigger form validation manually
+    await formik.validateForm();
+    // Set all fields as touched to show errors for all fields
+    formik.setTouched({
+      headerTitle: true,
+      date: true,
+      videos: true,
+    });
+
+    if (formik.isValid) {
+      handleSubmit(); // Submit only if form is valid
+    }
+  };
+
+  const handleResetWithValidation = () => {
+    // Reset form and error state
+    formik.resetForm({
+      values: {
+        headerTitle: "",
+        date: "",
+        videos: [],
+        url: [],
+      },
+    });
+
+    setFieldValue("videos", null);
+    setSelectedFileName([]);
+
+    // Ensure touched state is reset so new validations are applied
+    formik.setTouched({
+      headerTitle: false,
+      date: false,
+      videos: false,
+      url: false,
+    });
   };
 
   return (
@@ -185,17 +281,43 @@ const AddVlogForm = ({ formData }) => {
                 type="text"
                 formik={formik}
                 name="headerTitle"
-                placeholder="Enter Header Title"
+                placeholder="Enter Logger Name"
               />
-              <InputForm
+              <TextField
+                size="small"
                 type="date"
-                formik={formik}
+                id="outlined-basic"
+                label="Please Select Date"
                 name="date"
-                placeholder="Please select date"
+                placeholder="Please Select Date"
+                value={values?.date}
+                variant="outlined"
+                onChange={formik.handleChange}
+                fullWidth
+                onBlur={formik.handleBlur} // Ensure onBlur triggers validation
+                error={Boolean(formik.touched.date && formik.errors.date)} // Show error only after interaction
+                helperText={
+                  formik.touched.date && formik.errors.date
+                    ? formik.errors.date
+                    : ""
+                } // Display error message only when touched
+                InputProps={
+                  type === "date"
+                    ? {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <span role="img" aria-label="calendar">
+                              📅
+                            </span>
+                          </InputAdornment>
+                        ),
+                      }
+                    : {}
+                }
               />
             </Box>
 
-            {/* videoLink and videos */}
+            {/* url and videos */}
             <Box
               sx={{
                 display: "flex",
@@ -222,7 +344,7 @@ const AddVlogForm = ({ formData }) => {
 
               <Box sx={{ width: "50%" }}>
                 {/* Video Links */}
-                {values.videoLink.map((link, index) => (
+                {values?.url?.map((link, index) => (
                   <Box key={index}>
                     <Typography variant="h6">{`video link ${
                       index + 1
@@ -233,15 +355,13 @@ const AddVlogForm = ({ formData }) => {
                           width: "200px",
                           marginBottom: "5px",
                         }}
-                        id={`videoLink[${index}]`}
+                        id={`url[${index}]`}
                         label={`Enter video link ${index + 1}`}
                         variant="outlined"
-                        name={`videoLink[${index}]`}
+                        name={`url[${index}]`}
                         required
                         value={link || ""}
-                        onChange={(e) =>
-                          handleChangeOptions(e, index, "videoLink")
-                        }
+                        onChange={(e) => handleChangeOptions(e, index, "url")}
                         onBlur={handleBlur}
                       />
                       <Box>
@@ -279,8 +399,8 @@ const AddVlogForm = ({ formData }) => {
             >
               <FormButton
                 formData={formData}
-                handleCombinedClick={handleSubmit}
-                handleReset={handleReset}
+                handleCombinedClick={handleSubmitWithValidation}
+                handleReset={handleResetWithValidation}
               />
             </Box>
           </Box>

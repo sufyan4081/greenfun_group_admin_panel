@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Paper,
+  Slide,
   Table,
   TableBody,
   TableCell,
@@ -26,21 +27,22 @@ import SearchForm from "../../components/SearchForm";
 import { addBlogCol } from "../../data/mockData";
 import ViewModal from "./ViewModal";
 import EditDialogs from "../../components/EditDialogs/EditDialogs";
-import { deleteSubject } from "../../api/addControl/boardType/subject_api";
 import { QueryKeys } from "../../utils/QueryKey";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSnackbar } from "notistack";
-import CloseIcon from "@mui/icons-material/Close";
 import DeleteModal from "../../components/DeleteModal";
 import ColumnFilter from "../../components/ColumnFilter/ColumnFilter";
 import { handleDownloadPDF } from "../../components/DownloadPDF/handleDownloadPDF";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
+import { deleteBlog } from "../../api/Blog/blog_api";
+import { closeSnackbar, enqueueSnackbar } from "notistack";
+import CloseIcon from "@mui/icons-material/Close";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${TableCell.head}`]: {
     backgroundColor: theme.palette.common.transparent,
     color: theme.palette.common.iconColor,
+    textAlign: "center",
   },
   [`&.${TableCell.body}`]: {
     fontSize: 14,
@@ -54,9 +56,11 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
+    textAlign: "center",
   },
   "&:last-child td, &:last-child th": {
     border: 0,
+    textAlign: "center",
   },
 }));
 
@@ -66,9 +70,11 @@ const AddBlogTable = ({ blogData, allData }) => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
 
+  console.log("blogData", blogData);
+
   // For column filtering
   const [anchorEl, setAnchorEl] = useState(null);
-  const defaultVisibleColumns = ["Title", "Image", "Actions"];
+  const defaultVisibleColumns = ["Title", "Images", "Actions"];
   const [visibleColumns, setVisibleColumns] = useState(defaultVisibleColumns);
 
   const handleToggleColumn = (columnName) => {
@@ -96,15 +102,12 @@ const AddBlogTable = ({ blogData, allData }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
 
-  // notistack
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
   // delete data mutation
   const mutationDelete = useMutation({
-    mutationFn: deleteSubject,
+    mutationFn: deleteBlog,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QueryKeys.blog });
-      enqueueSnackbar("Data deleted successfully", {
+      enqueueSnackbar("Data Deleted Successfully", {
         variant: "success",
         anchorOrigin: { vertical: "top", horizontal: "center" },
         action: (key) => (
@@ -164,46 +167,130 @@ const AddBlogTable = ({ blogData, allData }) => {
   const endIndex = startIndex + rowsPerPage;
   const paginatedData = filteredData?.slice(startIndex, endIndex);
 
-  // Download Excel
+  // for download excel sheet of table data
   const handleDownloadExcel = () => {
-    const filteredAndVisibleData = paginatedData?.map((item) =>
+    const filteredAndVisibleData = paginatedData?.map((item, index) =>
       addBlogCol
         .filter(
           (col) =>
             visibleColumns.includes(col.name) &&
             col.name !== "Actions" &&
-            col.name.toLowerCase() !== "image"
+            col.name.toLowerCase() !== "subject logo"
         )
-        .map((col) => item[col.name.toLowerCase()])
+        .map((col) => {
+          if (col.name.toLowerCase() === "title" && item.title) {
+            return `${item.title}`;
+          } else if (col.name.toLowerCase() === "description" && item.content) {
+            return `${item.content}`;
+          } else if (
+            col.name.toLowerCase() === "blogger name" &&
+            item.headerTitle
+          ) {
+            return `${item.headerTitle}`;
+          } else if (col.name.toLowerCase() === "date" && item.date) {
+            return `${item.date.slice(0, 10)}`;
+          } else if (
+            col.name.toLowerCase() === "images" &&
+            item.images.length > 0
+          ) {
+            return item?.images?.map((item, i) => (
+              <Tooltip title={item.title}>
+                <img
+                  src={item[col.name.toLowerCase()]}
+                  alt={item.title}
+                  style={{ width: "50px", height: "50px" }}
+                />
+              </Tooltip>
+            ));
+          } else {
+            return "No data available";
+          }
+        })
     );
 
+    // Create a worksheet
     const ws = XLSX.utils.aoa_to_sheet([
       addBlogCol
-        .filter((col) => visibleColumns.includes(col.name))
+        .filter(
+          (col) =>
+            visibleColumns.includes(col.name) &&
+            col.name !== "Actions" &&
+            col.name.toLowerCase() !== "images"
+        )
         .map((col) => col.name),
       ...filteredAndVisibleData,
     ]);
 
+    // Create a workbook
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "Blog Data.xlsx");
+
+    // Save the workbook
+    XLSX.writeFile(wb, "blog_data.xlsx");
   };
 
-  // Download PDF
+  // Handle download PDF
   const handleDownloadPDFClick = () => {
     const doc = new jsPDF();
     const columns = [
       "Sr. No.",
-      ...visibleColumns.filter((col) => col !== "Actions"),
+      ...visibleColumns.filter(
+        (col) => col !== "Actions" && col.toLowerCase() !== "images"
+      ),
     ];
-    const rows = paginatedData?.map((item, index) => [
-      index + 1,
-      ...addBlogCol
-        .filter((col) => visibleColumns.includes(col.name))
-        .map((col) => item[col.name.toLowerCase()]),
-    ]);
+    const rows = paginatedData?.map((item, index) => {
+      const rowData = [
+        index + 1,
+        ...addBlogCol
+          .filter(
+            (col) =>
+              visibleColumns.includes(col.name) &&
+              col.name !== "Actions" &&
+              col.name.toLowerCase() !== "images"
+          )
+          .map((col) => {
+            if (col.name.toLowerCase() === "title" && item.title) {
+              return `${item.title}`;
+            } else if (
+              col.name.toLowerCase() === "description" &&
+              item.content
+            ) {
+              return `${item.content}`;
+            } else if (
+              col.name.toLowerCase() === "blogger name" &&
+              item.headerTitle
+            ) {
+              return `${item.headerTitle}`;
+            } else if (col.name.toLowerCase() === "date" && item.date) {
+              return `${item.date.slice(0, 10)}`;
+            } else if (
+              col.name.toLowerCase() === "images" &&
+              item.images.length > 0
+            ) {
+              return item?.images?.map((item, i) => (
+                <Tooltip title={item.title}>
+                  <img
+                    src={item[col.name.toLowerCase()]}
+                    alt={item.title}
+                    style={{ width: "50px", height: "50px" }}
+                  />
+                </Tooltip>
+              ));
+            } else {
+              return "No data available";
+            }
+          }),
+      ];
 
-    handleDownloadPDF({ doc, tableHeading: "Blog Data", columns, rows });
+      return rowData;
+    });
+
+    handleDownloadPDF({
+      doc,
+      tableHeading: "blog_data",
+      columns,
+      rows,
+    });
   };
 
   return (
@@ -251,7 +338,9 @@ const AddBlogTable = ({ blogData, allData }) => {
         <Table aria-label="customized table" stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <StyledTableCell>Sr.No.</StyledTableCell>
+              <StyledTableCell sx={{ textAlign: "center" }}>
+                Sr.No.
+              </StyledTableCell>
               {addBlogCol.map(
                 (col, i) =>
                   visibleColumns.includes(col.name) &&
@@ -262,7 +351,9 @@ const AddBlogTable = ({ blogData, allData }) => {
                   )
               )}
               {visibleColumns.includes("Actions") && (
-                <StyledTableCell>Actions</StyledTableCell>
+                <StyledTableCell sx={{ textAlign: "center" }}>
+                  Actions
+                </StyledTableCell>
               )}
             </TableRow>
           </TableHead>
@@ -272,37 +363,80 @@ const AddBlogTable = ({ blogData, allData }) => {
             {paginatedData?.length > 0 ? (
               paginatedData.map((item, index) => (
                 <StyledTableRow key={index}>
-                  <StyledTableCell>{startIndex + index + 1}</StyledTableCell>
+                  <StyledTableCell sx={{ textAlign: "center" }}>
+                    {startIndex + index + 1}
+                  </StyledTableCell>
                   {addBlogCol.map(
                     (col, i) =>
                       visibleColumns.includes(col.name) && (
-                        <StyledTableCell key={i}>
-                          {col.name === "Image" ? (
-                            <Tooltip title={item.title}>
-                              <img
-                                src={item[col.name.toLowerCase()]}
-                                alt={item.title}
-                                style={{ width: "50px", height: "50px" }}
-                              />
-                            </Tooltip>
-                          ) : (
-                            item[col.name.toLowerCase()]
-                          )}
+                        <StyledTableCell align="center" key={i}>
+                          {(() => {
+                            if (
+                              col.name.toLowerCase() === "title" &&
+                              item.title
+                            ) {
+                              return `${item.title}`;
+                            } else if (
+                              col.name.toLowerCase() === "description" &&
+                              item.content
+                            ) {
+                              return `${item.content}`;
+                            } else if (
+                              col.name.toLowerCase() === "blogger name" &&
+                              item.headerTitle
+                            ) {
+                              return `${item.headerTitle}`;
+                            } else if (
+                              col.name.toLowerCase() === "date" &&
+                              item.date
+                            ) {
+                              return `${item.date.slice(0, 10)}`;
+                            } else if (
+                              col.name.toLowerCase() === "images" &&
+                              item.images
+                            ) {
+                              return item?.images?.map((img, idx) => (
+                                <img
+                                  src={`http://ec2-13-232-51-190.ap-south-1.compute.amazonaws.com:5000${img}`} // Use the image URL here
+                                  alt={`image-${idx}`} // Provide a unique alt text for each image
+                                  style={{
+                                    width: "50px",
+                                    height: "50px",
+                                    marginRight: "10px",
+                                  }} // Styling for the image
+                                />
+                              ));
+                            } else {
+                              return "No data available";
+                            }
+                          })()}
                         </StyledTableCell>
                       )
                   )}
-                  <StyledTableCell>
-                    <Button onClick={() => handleViewClick(item)} title="View">
+                  <StyledTableCell align="center">
+                    <Button
+                      onClick={() => handleViewClick(item)}
+                      title="View"
+                      size="small"
+                      sx={{ minWidth: "30px", padding: "0px" }} // Reduce width and paddings
+                    >
                       <VisibilityIcon sx={{ color: iconColor }} />
                     </Button>
-                    <Button onClick={() => handleEditClick(item)} title="Edit">
+                    <Button
+                      onClick={() => handleEditClick(item)}
+                      title="Edit"
+                      sx={{ minWidth: "30px", padding: "0px" }}
+                    >
                       <ModeEditIcon sx={{ color: iconColor }} />
                     </Button>
                     <Button
-                      onClick={() => handleDeleteClick(item.id)}
                       title="Delete"
+                      sx={{ minWidth: "30px", padding: "0px" }}
                     >
-                      <DeleteIcon sx={{ color: iconColor }} />
+                      <DeleteIcon
+                        sx={{ color: iconColor }}
+                        onClick={() => handleDeleteClick(item._id)}
+                      />
                     </Button>
                   </StyledTableCell>
                 </StyledTableRow>
@@ -324,25 +458,40 @@ const AddBlogTable = ({ blogData, allData }) => {
       <Box
         sx={{
           width: "100%",
-          padding: "0px !important",
+          padding: "0px",
           margin: { lg: "0", md: "0", sm: "0", xs: "10px 0px" },
           display: "flex",
           flexDirection: { lg: "row", md: "row", sm: "row", xs: "column" },
           justifyContent: "space-between",
-          alignItems: {
-            lg: "center",
-            md: "center",
-            sm: "center",
-            xs: "flex-start",
-          },
+          alignItems: "baseline", // Align items on the baseline
         }}
       >
-        <Box>
-          <Typography sx={{ pl: 1 }}>Total Blog : {totalLength}</Typography>
+        {/* Left side content */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline", // Align content to baseline
+          }}
+        >
+          <Typography
+            sx={{
+              pl: 1,
+              verticalAlign: "baseline",
+              lineHeight: "1.5", // Adjust to match pagination height if necessary
+            }}
+          >
+            Total Blog: {totalLength}
+          </Typography>
         </Box>
-        <Box>
+
+        {/* Right side pagination */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline", // Ensure both sides are on the same baseline
+          }}
+        >
           {isSmallScreen ? (
-            // Configuration for small screens
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
@@ -353,21 +502,20 @@ const AddBlogTable = ({ blogData, allData }) => {
               onRowsPerPageChange={handleChangeRowsPerPage}
               sx={{
                 "& .MuiTablePagination-toolbar": {
-                  padding: "0px !important",
-                  marginRight: "25px !important",
+                  padding: "0px",
+                  alignItems: "baseline", // Align toolbar content to baseline
                 },
                 "& .MuiTablePagination-actions": {
-                  padding: "0px !important",
-                  margin: "0px !important",
+                  padding: "0px",
+                  margin: "0px",
+                  alignItems: "baseline", // Align actions to baseline
                 },
-                "& .css-1hgjne-MuiButtonBase-root-MuiIconButton-root": {
-                  padding: "0px 0px 0px 0px !important",
-                  margin: "0px !important",
+                "& .MuiTablePagination-caption": {
+                  lineHeight: "1.5", // Adjust caption line height for alignment
                 },
               }}
             />
           ) : (
-            // Configuration for larger screens
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
@@ -376,6 +524,15 @@ const AddBlogTable = ({ blogData, allData }) => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                "& .MuiTablePagination-toolbar": {
+                  display: "flex",
+                  alignItems: "baseline", // Align toolbar content to baseline
+                },
+                "& .MuiTablePagination-caption": {
+                  lineHeight: "1.5", // Adjust caption line height for better baseline alignment
+                },
+              }}
             />
           )}
         </Box>
@@ -390,17 +547,18 @@ const AddBlogTable = ({ blogData, allData }) => {
 
       {/* Edit modal */}
       <EditDialogs
+        formData={selectedFormData}
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        formData={selectedFormData}
-        allData={allData}
+        title="Blog"
+        tableName="Blog"
       />
 
-      {/* Delete confirmation modal */}
+      {/* Delete Confirmation Dialog */}
       <DeleteModal
-        open={showDeleteConfirmation}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        showDeleteConfirmation={showDeleteConfirmation}
+        handleCancelDelete={handleCancelDelete}
+        handleConfirmDelete={handleConfirmDelete}
       />
     </div>
   );

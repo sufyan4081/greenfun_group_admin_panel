@@ -21,7 +21,6 @@ import SearchForm from "../../components/SearchForm";
 import { addCertificateCol } from "../../data/mockData";
 import ViewModal from "./ViewModal";
 import EditDialogs from "../../components/EditDialogs/EditDialogs";
-import { deleteSubject } from "../../api/addControl/boardType/subject_api";
 import { QueryKeys } from "../../utils/QueryKey";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
@@ -72,7 +71,7 @@ const AddCertificateTable = ({ certificateData, allData }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   // delete data mutation
   const mutationDelete = useMutation({
-    mutationFn: deleteSubject,
+    // mutationFn: deleteSubject,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QueryKeys.blog });
       enqueueSnackbar("Data deleted successfully", {

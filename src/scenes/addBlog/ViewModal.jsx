@@ -18,7 +18,11 @@ const ViewModal = ({ open, onClose, data }) => {
         </Typography>
 
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          <b>Header Title:</b> {data?.headerTitle}
+          <b>Description:</b> {data?.content}
+        </Typography>
+
+        <Typography variant="body1" sx={{ marginBottom: "10px" }}>
+          <b>Blogger Name:</b> {data?.headerTitle}
         </Typography>
 
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
@@ -26,7 +30,7 @@ const ViewModal = ({ open, onClose, data }) => {
         </Typography>
 
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          <b>Video:</b> {data?.video}
+          <b>images:</b> {data?.images.map((item) => item.images)}
         </Typography>
       </DialogContent>
       <DialogActions>

@@ -24,7 +24,6 @@ import SearchForm from "../../components/SearchForm";
 import { addVlogCol } from "../../data/mockData";
 import ViewModal from "./ViewModal";
 import EditDialogs from "../../components/EditDialogs/EditDialogs";
-import { deleteSubject } from "../../api/addControl/boardType/subject_api";
 import { QueryKeys } from "../../utils/QueryKey";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
@@ -34,6 +33,7 @@ import ColumnFilter from "../../components/ColumnFilter/ColumnFilter";
 import { handleDownloadPDF } from "../../components/DownloadPDF/handleDownloadPDF";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
+import { deleteVlog } from "../../api/Vlog/vlog_api";
 
 // Styled components
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -64,7 +64,7 @@ const AddVlogTable = ({ vlogData, allData }) => {
 
   // for filter column
   const [anchorEl, setAnchorEl] = useState(null);
-  const defaultVisibleColumns = ["Header Title", "Video", "Actions"];
+  const defaultVisibleColumns = ["Logger Name", "Videos", "Actions"];
   const [visibleColumns, setVisibleColumns] = useState(defaultVisibleColumns);
 
   const handleToggleColumn = (columnName) => {
@@ -95,10 +95,10 @@ const AddVlogTable = ({ vlogData, allData }) => {
 
   // delete data mutation
   const mutationDelete = useMutation({
-    mutationFn: deleteSubject,
+    mutationFn: deleteVlog,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QueryKeys.blog });
-      enqueueSnackbar("Data deleted successfully", {
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.vlog });
+      enqueueSnackbar("Data Deleted Successfully", {
         variant: "success",
         anchorOrigin: { vertical: "top", horizontal: "center" },
         action: (key) => (
@@ -144,7 +144,7 @@ const AddVlogTable = ({ vlogData, allData }) => {
   };
 
   const filteredData = vlogData?.filter((item) =>
-    item.title.toLowerCase().startsWith(searchQuery.toLowerCase())
+    item?.headerTitle?.toLowerCase().startsWith(searchQuery.toLowerCase())
   );
 
   const iconColor = theme.palette.mode === "dark" ? "white" : "black";
@@ -173,11 +173,11 @@ const AddVlogTable = ({ vlogData, allData }) => {
           (col) =>
             visibleColumns.includes(col.name) &&
             col.name !== "Actions" &&
-            col.name.toLowerCase() !== "video"
+            col.name.toLowerCase() !== "videos"
         )
         .map((col) => {
-          if (col.name.toLowerCase() === "header title" && item.title) {
-            return `${item.title}`;
+          if (col.name.toLowerCase() === "logger name" && item.headerTitle) {
+            return `${item.headerTitle}`;
           }
           if (col.name.toLowerCase() === "date" && item.date) {
             return `${item.date}`;
@@ -209,7 +209,10 @@ const AddVlogTable = ({ vlogData, allData }) => {
     const columns = [
       "Sr. No.",
       ...visibleColumns.filter(
-        (col) => col !== "Actions" && col.toLowerCase() !== "video"
+        (col) =>
+          col !== "Actions" &&
+          col.toLowerCase() !== "videos" &&
+          col.toLowerCase() !== "video link"
       ),
     ];
     const rows = paginatedData?.map((item, index) => {
@@ -224,11 +227,11 @@ const AddVlogTable = ({ vlogData, allData }) => {
               col.name !== "Videos"
           )
           .map((col) => {
-            if (col.name.toLowerCase() === "headerTitle" && item.headerTitle) {
+            if (col.name.toLowerCase() === "logger name" && item.headerTitle) {
               return `${item.headerTitle}`;
             }
             if (col.name.toLowerCase() === "date" && item.date) {
-              return `${item.date}`;
+              return `${item.date.slice(0, 10)}`;
             } else return item[col.name.toLowerCase()];
           }),
       ];
@@ -285,7 +288,7 @@ const AddVlogTable = ({ vlogData, allData }) => {
         <Table aria-label="customized table" stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <StyledTableCell>Sr.No.</StyledTableCell>
+              <StyledTableCell align="center">Sr.No.</StyledTableCell>
               {addVlogCol.map(
                 (col, i) =>
                   visibleColumns.includes(col.name) &&
@@ -296,7 +299,7 @@ const AddVlogTable = ({ vlogData, allData }) => {
                   )
               )}
               {visibleColumns.includes("Actions") && (
-                <StyledTableCell>Actions</StyledTableCell>
+                <StyledTableCell align="center">Actions</StyledTableCell>
               )}
             </TableRow>
           </TableHead>
@@ -306,14 +309,16 @@ const AddVlogTable = ({ vlogData, allData }) => {
             {paginatedData?.length > 0 ? (
               paginatedData.map((item, index) => (
                 <StyledTableRow key={index}>
-                  <StyledTableCell>{startIndex + index + 1}</StyledTableCell>
+                  <StyledTableCell align="center">
+                    {startIndex + index + 1}
+                  </StyledTableCell>
                   {addVlogCol.map(
                     (col, i) =>
                       visibleColumns.includes(col.name) && (
-                        <StyledTableCell key={i}>
+                        <StyledTableCell align="center" key={i}>
                           {(() => {
                             if (
-                              col.name.toLowerCase() === "header title" &&
+                              col.name.toLowerCase() === "logger name" &&
                               item.headerTitle
                             ) {
                               return `${item.headerTitle}`;
@@ -321,36 +326,35 @@ const AddVlogTable = ({ vlogData, allData }) => {
                               col.name.toLowerCase() === "date" &&
                               item.date
                             ) {
-                              return `${item.date}`;
+                              return `${item.date.slice(0, 10)}`;
                             } else if (
                               col.name.toLowerCase() === "videos" &&
-                              item.videos
+                              item.video
                             ) {
-                              return item.videos.map((video, i) => (
-                                <div key={video._id}>
+                              return item.video.map((v, i) => (
+                                <div key={v._id}>
                                   <a
-                                    href={video.url}
+                                    href={`http://ec2-13-232-51-190.ap-south-1.compute.amazonaws.com:5000${v}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    download={`video${video.order}`} // Optionally set download attribute
                                   >
-                                    Download Video {video.order}
+                                    {`Watch Video ${i + 1}`}
                                   </a>
                                 </div>
                               ));
                             } else if (
                               col.name.toLowerCase() === "video link" &&
-                              item.videoLink === ""
+                              item.url == ""
                             ) {
-                              return "No data available";
+                              return "No url available";
                             } else if (
                               col.name.toLowerCase() === "video link" &&
-                              item.videoLink.length > 0
+                              item.url.length > 0
                             ) {
-                              return item.videoLink.map((video, i) => (
+                              return item.url.map((v, i) => (
                                 <div key={i}>
                                   <a
-                                    href={`${video}`}
+                                    href={`http://ec2-13-232-51-190.ap-south-1.compute.amazonaws.com:5000${v}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -365,18 +369,30 @@ const AddVlogTable = ({ vlogData, allData }) => {
                         </StyledTableCell>
                       )
                   )}
-                  <StyledTableCell>
-                    <Button onClick={() => handleViewClick(item)} title="View">
+                  <StyledTableCell align="center">
+                    <Button
+                      onClick={() => handleViewClick(item)}
+                      title="View"
+                      size="small"
+                      sx={{ minWidth: "30px", padding: "0px" }} // Reduce width and paddings
+                    >
                       <VisibilityIcon sx={{ color: iconColor }} />
                     </Button>
-                    <Button onClick={() => handleEditClick(item)} title="Edit">
+                    <Button
+                      onClick={() => handleEditClick(item)}
+                      title="Edit"
+                      sx={{ minWidth: "30px", padding: "0px" }}
+                    >
                       <ModeEditIcon sx={{ color: iconColor }} />
                     </Button>
                     <Button
-                      onClick={() => handleDeleteClick(item.id)}
                       title="Delete"
+                      sx={{ minWidth: "30px", padding: "0px" }}
                     >
-                      <DeleteIcon sx={{ color: iconColor }} />
+                      <DeleteIcon
+                        sx={{ color: iconColor }}
+                        onClick={() => handleDeleteClick(item._id)}
+                      />
                     </Button>
                   </StyledTableCell>
                 </StyledTableRow>
@@ -421,16 +437,21 @@ const AddVlogTable = ({ vlogData, allData }) => {
         onClose={handleCloseViewModal}
         data={selectedDataForView}
       />
+
+      {/* Edit modal */}
       <EditDialogs
+        formData={selectedFormData}
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        formData={selectedFormData}
+        title="Vlog"
+        tableName="Vlog"
       />
+
+      {/* Delete Confirmation Dialog */}
       <DeleteModal
-        open={showDeleteConfirmation}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-        title="Are you sure you want to delete this record?"
+        showDeleteConfirmation={showDeleteConfirmation}
+        handleCancelDelete={handleCancelDelete}
+        handleConfirmDelete={handleConfirmDelete}
       />
     </div>
   );

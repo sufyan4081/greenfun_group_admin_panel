@@ -1,17 +1,15 @@
 export const addBlogCol = [
   { name: "Title" },
-  { name: "Content" },
-  { name: "Header Title" },
+  { name: "Description" },
+  { name: "Blogger Name" },
   { name: "Date" },
-  { name: "Image" },
-  { name: "Actions" },
+  { name: "Images" },
 ];
 export const addVlogCol = [
-  { name: "Header Title" },
+  { name: "Logger Name" },
   { name: "Date" },
-  { name: "Video" },
+  { name: "Videos" },
   { name: "Video Link" },
-  { name: "Actions" },
 ];
 
 export const addCertificateCol = [

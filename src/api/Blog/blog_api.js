@@ -1,41 +1,51 @@
-import { client } from "../../api-client";
-import config from "../../../config";
+import { client } from "../api-client";
+import config from "../../config";
 const URL = config.BASE_URL; // REACT_APP_BASE_API_URL_DEV;
 
 const endPoints = {
-  // board
-  addBoard: "createBoard",
-  getBoard: "fetchBoards",
-  updateBoard: "updateBoardData",
-  deleteBoard: "deleteBoardData",
+  // blog
+  addBlog: "createBlog",
+  getBlogs: "getAllBlogs",
+  updateBlog: "updateBlogById",
+  deleteBlog: "deleteBlogById",
+  // getBlogbyCriteria: "getBlogbyCriteria",
 };
 
 export const API_URLS = {
-  // board
-  GET_ALL_BOARD: `${URL}/board/${endPoints.getBoard}`,
-  CREATE_BOARD: `${URL}/board/${endPoints.addBoard}`,
-  UPDATE_BOARD: `${URL}/board/${endPoints.updateBoard}`,
-  DELETE_BOARD: `${URL}/board/${endPoints.deleteBoard}`,
+  // blog
+  GET_ALL_BLOGS: `${URL}/blog/${endPoints.getBlogs}`,
+  CREATE_BLOG: `${URL}/blog/${endPoints.addBlog}`,
+  UPDATE_BLOG: `${URL}/blog/${endPoints.updateBlog}`,
+  DELETE_BLOG: `${URL}/blog/${endPoints.deleteBlog}`,
 };
 
-export const fetchBoards = async () => {
+export const fetchBlogs = async () => {
   try {
-    const url = `${API_URLS.GET_ALL_BOARD}`;
+    const url = `${API_URLS.GET_ALL_BLOGS}`;
     const response = await client.get(url);
 
     const data = response.data;
+
     return data;
   } catch (error) {
     throw new Error("An error occurred while fetching the data.");
   }
 };
 
-export const createBoard = async (postData) => {
+export const createBlog = async (postData) => {
   try {
-    const url = `${API_URLS.CREATE_BOARD}`;
+    const url = `${API_URLS.CREATE_BLOG}`;
+
     const formData = new FormData();
-    formData.append("name", postData.get("name"));
-    formData.append("boardImage", postData.get("boardImage"));
+    formData.append("title", postData.get("title"));
+    formData.append("content", postData.get("content"));
+    formData.append("headerTitle", postData.get("headerTitle"));
+    formData.append("date", postData.get("date"));
+
+    const blogImg = postData?.getAll("images");
+    blogImg?.forEach((con) => {
+      formData?.append("images", con); // Append as array
+    });
 
     const response = await client.post(url, formData, {
       headers: {
@@ -43,6 +53,7 @@ export const createBoard = async (postData) => {
       },
     });
     const data = response.data;
+
     return data;
   } catch (error) {
     console.error("An error occurred:", error);
@@ -50,34 +61,38 @@ export const createBoard = async (postData) => {
   }
 };
 
-export const deleteBoard = async (_id) => {
+export const deleteBlog = async (_id) => {
   try {
-    const url = `${API_URLS.DELETE_BOARD}/${_id}`;
+    const url = `${API_URLS.DELETE_BLOG}/${_id}`;
     const response = await client.delete(url);
+
     return response.data;
   } catch (error) {
     throw new Error("An error occurred while deleting the post.");
   }
 };
 
-export const EditBoard = async (_id, values) => {
+export const EditBlog = async (_id, values) => {
   try {
     const formData = new FormData();
-    formData.append("name", values.name);
+    formData.append("title", values.title);
+    formData.append("content", values.content);
+    formData.append("headerTitle", values.headerTitle);
+    formData.append("date", values.date);
 
-    if (values.boardImage) {
+    if (values.images) {
       if (
-        typeof values.boardImage === "string" &&
-        values.boardImage.startsWith("data:")
+        typeof values.images === "string" &&
+        values.images.startsWith("data:")
       ) {
-        const blob = dataURItoBlob(values.boardImage);
-        formData.append("boardImage", blob);
-      } else if (values.boardImage instanceof File) {
-        formData.append("boardImage", values.boardImage);
+        const blob = dataURItoBlob(values.images);
+        formData.append("images", blob);
+      } else if (values.images instanceof File) {
+        formData.append("images", values.images);
       }
     }
 
-    const url = `${API_URLS.UPDATE_BOARD}/${_id}`;
+    const url = `${API_URLS.UPDATE_BLOG}/${_id}`;
 
     // Create the request object
     const requestOptions = {
@@ -88,9 +103,9 @@ export const EditBoard = async (_id, values) => {
     const response = await fetch(url, requestOptions);
 
     if (response.ok) {
-      const updatedBoardData = await response.json();
+      const updatedBlogData = await response.json();
 
-      return updatedBoardData;
+      return updatedBlogData;
     } else {
       console.error("Update failed with status:", response.status);
       throw Error(`Update request failed with status: ${response.status}`);

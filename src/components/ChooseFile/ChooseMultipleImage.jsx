@@ -1,5 +1,4 @@
 import React from "react";
-import "./style.css";
 import { Box, Button, FormHelperText, Typography } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
@@ -7,7 +6,6 @@ const ChooseMultipleImage = ({
   label,
   name,
   formik,
-  error,
   setSelectedFileName,
   selectedFile,
   disabled,
@@ -16,15 +14,13 @@ const ChooseMultipleImage = ({
     const selectedFiles = e.currentTarget.files;
     if (selectedFiles) {
       const filesArray = Array.from(selectedFiles); // Convert FileList to array
-      formik.setFieldValue(name, filesArray); // Set the conceptimage array in formik values
+      formik.setFieldValue(name, filesArray); // Set the images array in formik values
       setSelectedFileName(filesArray.map((file) => file.name)); // Update the selected file names in state
     }
   };
+
   // Ensure the input key changes when selectedFile changes to reset it
   const inputKey = selectedFile ? selectedFile.name : "";
-
-  // const errorImage = selectedFile.length === 0 ? "Image is required" : null;
-  //
 
   return (
     <>
@@ -48,6 +44,8 @@ const ChooseMultipleImage = ({
             />
           </Button>
         </Box>
+
+        {/* Display Selected File Names */}
         <Box>
           {selectedFile && selectedFile.length > 0 ? (
             <Typography style={{ margin: "5px 0" }}>
@@ -57,37 +55,25 @@ const ChooseMultipleImage = ({
                 <span key={index}>
                   {index + 1}. {file}
                   {", "}
-                  {/* {index !== selectedFile.length - 1 ? ", " : ""} */}
                 </span>
               ))}
             </Typography>
           ) : null}
         </Box>
 
+        {/* Helper Text - Error Message */}
         <Box>
-          {/* Helper Text */}
-          {/* {formik.touched[name] && formik.errors[name] && (
+          {formik.touched[name] && formik.errors[name] && (
             <FormHelperText
               style={{
                 color: "red",
                 margin: "2px 0 0 5px",
-                fontSize: ".7rem",
+                fontSize: ".8rem",
               }}
             >
               {formik.errors[name]}
             </FormHelperText>
-          )} */}
-          {/* {errorImage && (
-            <FormHelperText
-              style={{
-                color: "red",
-                margin: "2px 0 0 5px",
-                fontSize: ".7rem",
-              }}
-            >
-              {errorImage}
-            </FormHelperText>
-          )} */}
+          )}
         </Box>
       </Box>
     </>

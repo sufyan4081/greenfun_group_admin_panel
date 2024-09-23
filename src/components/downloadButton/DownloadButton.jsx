@@ -54,7 +54,7 @@ const DownloadButton = ({
             sx={{
               minWidth: "0px !important",
               border: 1,
-              padding: "3px 6px !important",
+              padding: "4px 6px !important",
             }}
             onClick={columnFilter}
           >

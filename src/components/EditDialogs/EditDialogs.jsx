@@ -9,6 +9,8 @@ import Slide from "@mui/material/Slide";
 import { Box } from "@mui/material";
 import Aos from "aos";
 import "aos/dist/aos.css";
+import AddBlogForm from "../../scenes/addBlog/AddBlogForm";
+import AddVlogForm from "../../scenes/addVlog/AddVlogForm";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return (
@@ -28,7 +30,10 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 // Map table names to corresponding form components
-const formComponents = {};
+const formComponents = {
+  Blog: AddBlogForm,
+  Vlog: AddVlogForm,
+};
 
 export default function EditDialogs({
   open,

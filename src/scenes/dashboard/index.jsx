@@ -32,7 +32,12 @@ const Dashboard = ({ token }) => {
           },
           width: "100%",
           mt: 12,
-          padding: "0px 0px 0px 20px",
+          padding: {
+            lg: "0px 0px 0px 20px",
+            md: "0px 0px 0px 20px",
+            sm: "0px 20px 0px 20px",
+            xs: "0px 20px 0px 20px",
+          },
           boxSizing: "border-box",
         }}
       >
