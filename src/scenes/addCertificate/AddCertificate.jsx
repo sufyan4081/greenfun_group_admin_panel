@@ -1,28 +1,31 @@
 import React from "react";
 import BreadCrumbs from "../../components/BreadCrumbs";
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Grid } from "@mui/material";
 import AddCertificateTable from "./AddCertificateTable";
 import AddCertificateForm from "./AddCertificateForm";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCertificates } from "../../api/Certificate/certificate_api";
+import { QueryKeys } from "../../utils/QueryKey";
 
 const AddCertificate = () => {
   // Use React Query to fetch certificate data
-  // const {
-  //   data: certificateData,
-  //   error: certificateError,
-  //   isLoading: certificateIsLoading,
-  //   isError: certificateIsError,
-  // } = useQuery(QueryKeys.certificate, fetchCertificates);
+  const {
+    data: certificateData,
+    error: certificateError,
+    isLoading: certificateIsLoading,
+    isError: certificateIsError,
+  } = useQuery({ queryFn: fetchCertificates, queryKey: QueryKeys.certificate });
 
-  // if (certificateIsLoading) {
-  //   return (
-  //     <Grid align="center" sx={{ marginTop: "10px" }}>
-  //       <CircularProgress sx={{ color: "#20209f" }} />
-  //     </Grid>
-  //   );
-  // }
-  // if (certificateIsError) {
-  //   return <p>Error: {subjectError.message}</p>;
-  // }
+  if (certificateIsLoading) {
+    return (
+      <Grid align="center" sx={{ marginTop: "10px" }}>
+        <CircularProgress sx={{ color: "#20209f" }} />
+      </Grid>
+    );
+  }
+  if (certificateIsError) {
+    return <p>Error: {certificateError.message}</p>;
+  }
 
   return (
     <>
@@ -34,8 +37,8 @@ const AddCertificate = () => {
         {/* import both table and subject filter  */}
         <Box sx={{ marginTop: "70px" }}>
           <AddCertificateTable
-          // certificateData={certificateData?.data}
-          // allData={certificateData.data.length}
+            certificateData={certificateData}
+            allData={certificateData?.length}
           />
         </Box>
       </Box>

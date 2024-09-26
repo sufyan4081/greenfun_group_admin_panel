@@ -10,6 +10,8 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Typography,
+  useMediaQuery,
   useTheme,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -31,6 +33,7 @@ import { handleDownloadPDF } from "../../components/DownloadPDF/handleDownloadPD
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import { styled } from "@mui/material/styles";
+import { deleteCertificate } from "../../api/Certificate/certificate_api";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${TableCell.head}`]: {
@@ -61,7 +64,7 @@ const AddCertificateTable = ({ certificateData, allData }) => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const defaultVisibleColumns = ["Title", "Code", "Image", "Actions"];
+  const defaultVisibleColumns = ["Title", "Code", "Images", "Actions"];
   const [visibleColumns, setVisibleColumns] = useState(defaultVisibleColumns);
   const queryClient = useQueryClient();
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -69,11 +72,15 @@ const AddCertificateTable = ({ certificateData, allData }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  // Media query for small screens
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   // delete data mutation
   const mutationDelete = useMutation({
-    // mutationFn: deleteSubject,
+    mutationFn: deleteCertificate,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QueryKeys.blog });
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.certificate });
       enqueueSnackbar("Data deleted successfully", {
         variant: "success",
         anchorOrigin: { vertical: "top", horizontal: "center" },
@@ -168,19 +175,18 @@ const AddCertificateTable = ({ certificateData, allData }) => {
           (col) =>
             visibleColumns.includes(col.name) &&
             col.name !== "Actions" &&
-            col.name.toLowerCase() !== "image"
+            col.name.toLowerCase() !== "images"
         )
         .map((col) => {
-          if (col.name.toLowerCase() === "title" && item.title) {
-            return `${item.title}`;
+          if (col.name.toLowerCase() === "title" && item?.title) {
+            return `${item?.title}`;
+          } else if (col.name.toLowerCase() === "code" && item?.code) {
+            return `${item?.code}`;
+          } else if (col.name.toLowerCase() === "date" && item.date) {
+            return `${item?.date.slice(0, 10)}`;
+          } else {
+            return "No data available";
           }
-          if (col.name.toLowerCase() === "date" && item.date) {
-            return `${item.date}`;
-          }
-
-          if (col.name.toLowerCase() === "code" && item.code) {
-            return `${item.code}`;
-          } else return item[col.name.toLowerCase()];
         })
     );
 
@@ -218,20 +224,18 @@ const AddCertificateTable = ({ certificateData, allData }) => {
             (col) =>
               visibleColumns.includes(col.name) &&
               col.name !== "Actions" &&
-              col.name.toLowerCase() !== "image"
+              col.name.toLowerCase() !== "images"
           )
           .map((col) => {
-            if (col.name.toLowerCase() === "title" && item.title) {
-              return `${item.title}`;
+            if (col.name.toLowerCase() === "title" && item?.title) {
+              return `${item?.title}`;
+            } else if (col.name.toLowerCase() === "code" && item?.code) {
+              return `${item?.code}`;
+            } else if (col.name.toLowerCase() === "date" && item.date) {
+              return `${item?.date.slice(0, 10)}`;
+            } else {
+              return "No data available";
             }
-
-            if (col.name.toLowerCase() === "date" && item.date) {
-              return `${item.date}`;
-            }
-
-            if (col.name.toLowerCase() === "code" && item.code) {
-              return `${item.code}`;
-            } else return item[col.name.toLowerCase()];
           }),
       ];
 
@@ -287,7 +291,7 @@ const AddCertificateTable = ({ certificateData, allData }) => {
         <Table aria-label="customized table" stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <StyledTableCell>Sr.No.</StyledTableCell>
+              <StyledTableCell align="center">Sr.No.</StyledTableCell>
               {addCertificateCol.map(
                 (col, i) =>
                   visibleColumns.includes(col.name) &&
@@ -298,7 +302,7 @@ const AddCertificateTable = ({ certificateData, allData }) => {
                   )
               )}
               {visibleColumns.includes("Actions") && (
-                <StyledTableCell>Actions</StyledTableCell>
+                <StyledTableCell align="center">Actions</StyledTableCell>
               )}
             </TableRow>
           </TableHead>
@@ -308,22 +312,45 @@ const AddCertificateTable = ({ certificateData, allData }) => {
             {paginatedData?.length > 0 ? (
               paginatedData.map((item, index) => (
                 <StyledTableRow key={index}>
-                  <StyledTableCell>{startIndex + index + 1}</StyledTableCell>
+                  <StyledTableCell align="center">
+                    {startIndex + index + 1}
+                  </StyledTableCell>
                   {addCertificateCol.map(
                     (col, i) =>
                       visibleColumns.includes(col.name) && (
-                        <StyledTableCell key={i}>
+                        <StyledTableCell key={i} align="center">
                           {(() => {
                             if (
-                              col.name.toLowerCase() === "header title" &&
-                              item.headerTitle
+                              col.name.toLowerCase() === "title" &&
+                              item?.title
                             ) {
-                              return `${item.headerTitle}`;
+                              return `${item?.title}`;
+                            } else if (
+                              col.name.toLowerCase() === "code" &&
+                              item?.code
+                            ) {
+                              return `${item?.code}`;
+                            } else if (
+                              col.name.toLowerCase() === "images" &&
+                              item.certificates
+                            ) {
+                              return item.certificates?.map((img, idx) => (
+                                <img
+                                  key={idx} // Add a unique key for each image
+                                  src={`http://ec2-13-232-51-190.ap-south-1.compute.amazonaws.com:5000${img}`}
+                                  alt={`image-${idx}`}
+                                  style={{
+                                    width: "50px",
+                                    height: "50px",
+                                    marginRight: "10px",
+                                  }}
+                                />
+                              ));
                             } else if (
                               col.name.toLowerCase() === "date" &&
                               item.date
                             ) {
-                              return `${item.date}`;
+                              return `${item?.date.slice(0, 10)}`;
                             } else {
                               return "No data available";
                             }
@@ -331,18 +358,30 @@ const AddCertificateTable = ({ certificateData, allData }) => {
                         </StyledTableCell>
                       )
                   )}
-                  <StyledTableCell>
-                    <Button onClick={() => handleViewClick(item)} title="View">
+                  <StyledTableCell align="center">
+                    <Button
+                      onClick={() => handleViewClick(item)}
+                      title="View"
+                      size="small"
+                      sx={{ minWidth: "30px", padding: "0px" }} // Reduce width and paddings
+                    >
                       <VisibilityIcon sx={{ color: iconColor }} />
                     </Button>
-                    <Button onClick={() => handleEditClick(item)} title="Edit">
+                    <Button
+                      onClick={() => handleEditClick(item)}
+                      title="Edit"
+                      sx={{ minWidth: "30px", padding: "0px" }}
+                    >
                       <ModeEditIcon sx={{ color: iconColor }} />
                     </Button>
                     <Button
-                      onClick={() => handleDeleteClick(item.id)}
                       title="Delete"
+                      sx={{ minWidth: "30px", padding: "0px" }}
                     >
-                      <DeleteIcon sx={{ color: iconColor }} />
+                      <DeleteIcon
+                        sx={{ color: iconColor }}
+                        onClick={() => handleDeleteClick(item._id)}
+                      />
                     </Button>
                   </StyledTableCell>
                 </StyledTableRow>
@@ -360,29 +399,110 @@ const AddCertificateTable = ({ certificateData, allData }) => {
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={totalLength || 0}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      <Box
+        sx={{
+          width: "100%",
+          padding: "0px",
+          margin: { lg: "0", md: "0", sm: "0", xs: "10px 0px" },
+          display: "flex",
+          flexDirection: { lg: "row", md: "row", sm: "row", xs: "column" },
+          justifyContent: "space-between",
+          alignItems: "baseline", // Align items on the baseline
+        }}
+      >
+        {/* Left side content */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline", // Align content to baseline
+          }}
+        >
+          <Typography
+            sx={{
+              pl: 1,
+              verticalAlign: "baseline",
+              lineHeight: "1.5", // Adjust to match pagination height if necessary
+            }}
+          >
+            Total Certificate: {totalLength}
+          </Typography>
+        </Box>
+
+        {/* Right side pagination */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline", // Ensure both sides are on the same baseline
+          }}
+        >
+          {isSmallScreen ? (
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={totalLength}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                "& .MuiTablePagination-toolbar": {
+                  padding: "0px",
+                  alignItems: "baseline", // Align toolbar content to baseline
+                },
+                "& .MuiTablePagination-actions": {
+                  padding: "0px",
+                  margin: "0px",
+                  alignItems: "baseline", // Align actions to baseline
+                },
+                "& .MuiTablePagination-caption": {
+                  lineHeight: "1.5", // Adjust caption line height for alignment
+                },
+              }}
+            />
+          ) : (
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={allData}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                "& .MuiTablePagination-toolbar": {
+                  display: "flex",
+                  alignItems: "baseline", // Align toolbar content to baseline
+                },
+                "& .MuiTablePagination-caption": {
+                  lineHeight: "1.5", // Adjust caption line height for better baseline alignment
+                },
+              }}
+            />
+          )}
+        </Box>
+      </Box>
+
+      {/* View modal */}
       <ViewModal
         open={viewModalOpen}
         onClose={handleCloseViewModal}
         data={selectedDataForView}
       />
+
+      {/* Edit modal */}
       <EditDialogs
+        formData={selectedFormData}
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        formData={selectedFormData}
+        title="Certificate"
+        tableName="Certificate"
       />
+
+      {/* Delete Confirmation Dialog */}
       <DeleteModal
-        open={showDeleteConfirmation}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        showDeleteConfirmation={showDeleteConfirmation}
+        handleCancelDelete={handleCancelDelete}
+        handleConfirmDelete={handleConfirmDelete}
       />
     </div>
   );

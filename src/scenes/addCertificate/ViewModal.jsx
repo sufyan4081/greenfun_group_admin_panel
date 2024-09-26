@@ -18,15 +18,27 @@ const ViewModal = ({ open, onClose, data }) => {
         </Typography>
 
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          <b>Header Title:</b> {data?.headerTitle}
+          <b>Code:</b> {data?.code}
         </Typography>
 
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          <b>Date:</b> {data?.date}
+          <b>Date:</b> {data?.date.slice(0, 10)}
         </Typography>
 
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          <b>Video:</b> {data?.video}
+          <b>Images:</b>{" "}
+          {data?.certificates.map((img, idx) => (
+            <img
+              key={idx} // Add a unique key for each image
+              src={`http://ec2-13-232-51-190.ap-south-1.compute.amazonaws.com:5000${img}`}
+              alt={`image-${idx}`}
+              style={{
+                width: "50px",
+                height: "50px",
+                marginRight: "10px",
+              }}
+            />
+          ))}
         </Typography>
       </DialogContent>
       <DialogActions>

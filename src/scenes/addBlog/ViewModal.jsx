@@ -30,7 +30,19 @@ const ViewModal = ({ open, onClose, data }) => {
         </Typography>
 
         <Typography variant="body1" sx={{ marginBottom: "10px" }}>
-          <b>images:</b> {data?.images.map((item) => item.images)}
+          <b>images:</b>{" "}
+          {data?.images.map((img, idx) => (
+            <img
+              key={idx} // Add a unique key for each image
+              src={`http://ec2-13-232-51-190.ap-south-1.compute.amazonaws.com:5000${img}`}
+              alt={`image-${idx}`}
+              style={{
+                width: "50px",
+                height: "50px",
+                marginRight: "10px",
+              }}
+            />
+          ))}
         </Typography>
       </DialogContent>
       <DialogActions>

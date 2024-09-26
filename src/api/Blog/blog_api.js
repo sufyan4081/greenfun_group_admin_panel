@@ -72,29 +72,41 @@ export const deleteBlog = async (_id) => {
   }
 };
 
-export const EditBlog = async (_id, values) => {
+export const EditBlog = async (_id, values, selectedIndex) => {
   try {
     const formData = new FormData();
     formData.append("title", values.title);
     formData.append("content", values.content);
     formData.append("headerTitle", values.headerTitle);
     formData.append("date", values.date);
+    formData.append("imageIndex", selectedIndex); // Append the selected image index
 
-    if (values.images) {
-      if (
-        typeof values.images === "string" &&
-        values.images.startsWith("data:")
-      ) {
-        const blob = dataURItoBlob(values.images);
-        formData.append("images", blob);
-      } else if (values.images instanceof File) {
-        formData.append("images", values.images);
+    // Check if there is a valid image to update
+    if (
+      Array.isArray(values.images) &&
+      values.images.length > 0 &&
+      selectedIndex !== null
+    ) {
+      const newImage = values.images[selectedIndex]; // Assuming `values.images` is an array, get the image at the selected index
+
+      // Check if the new image is either a base64 string or a File object
+      if (typeof newImage === "string" && newImage.startsWith("data:")) {
+        // Convert base64 string to Blob
+        const blob = dataURItoBlob(newImage);
+        formData.append("images", blob); // Append the image as Blob (for base64)
+      } else if (newImage instanceof File) {
+        formData.append("images", newImage); // Append the image as a File
+      } else {
+        console.error("Invalid image format or image is missing.");
       }
+    } else {
+      console.warn(
+        "No valid image found in `values.images` or invalid selectedIndex."
+      );
     }
 
     const url = `${API_URLS.UPDATE_BLOG}/${_id}`;
 
-    // Create the request object
     const requestOptions = {
       method: "PUT",
       body: formData,
@@ -104,11 +116,10 @@ export const EditBlog = async (_id, values) => {
 
     if (response.ok) {
       const updatedBlogData = await response.json();
-
       return updatedBlogData;
     } else {
       console.error("Update failed with status:", response.status);
-      throw Error(`Update request failed with status: ${response.status}`);
+      throw new Error(`Update request failed with status: ${response.status}`);
     }
   } catch (error) {
     console.error("An error occurred:", error);

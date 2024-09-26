@@ -7,14 +7,13 @@ import {
   useTheme,
 } from "@mui/material";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { profileList } from "../../../data/mockData";
-import { supabase } from "../../../client";
 const ProfileIcon = () => {
   const [anchorElUser, setAnchorElUser] = useState(null);
   const theme = useTheme();
-
+  const navigate = useNavigate();
   //for profile link color
   const iconColor = theme.palette.mode === "dark" ? "white" : "black";
 
@@ -28,8 +27,8 @@ const ProfileIcon = () => {
   };
 
   async function signOut() {
-    sessionStorage.removeItem("token");
-    const { error } = await supabase.auth.signOut();
+    localStorage.removeItem("token");
+    navigate("/");
   }
 
   return (

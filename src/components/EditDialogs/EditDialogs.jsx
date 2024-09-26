@@ -11,6 +11,7 @@ import Aos from "aos";
 import "aos/dist/aos.css";
 import AddBlogForm from "../../scenes/addBlog/AddBlogForm";
 import AddVlogForm from "../../scenes/addVlog/AddVlogForm";
+import AddCertificateForm from "../../scenes/addCertificate/AddCertificateForm";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return (
@@ -33,6 +34,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const formComponents = {
   Blog: AddBlogForm,
   Vlog: AddVlogForm,
+  Certificate: AddCertificateForm,
 };
 
 export default function EditDialogs({

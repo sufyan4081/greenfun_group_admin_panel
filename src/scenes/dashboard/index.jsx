@@ -1,20 +1,53 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Grid } from "@mui/material";
 import StatsBox from "./StatsBox";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import Header from "../../components/Header";
+import { QueryKeys } from "../../utils/QueryKey";
+import { fetchBlogs } from "../../api/Blog/blog_api";
+import { useQuery } from "@tanstack/react-query";
+import { fetchVlogs } from "../../api/Vlog/vlog_api";
+import { fetchCertificates } from "../../api/Certificate/certificate_api";
+import { useSelector } from "react-redux";
 
-const Dashboard = ({ token }) => {
-  // import course
-  // const {
-  //   data: examData,
-  //   isLoading: examLoading,
-  //   isError: examError,
-  // } = useMediaQuery({
-  //   queryKey: QueryKeys.course,
-  //   queryFn: fetchExam,
-  // });
+const Dashboard = () => {
+  // Get user details from Redux state
+  const user = useSelector((state) => state.user.user);
+
+  // import blog
+  const { data: blogData, isLoading: blogLoading } = useQuery({
+    queryFn: fetchBlogs,
+    queryKey: QueryKeys.blog,
+  });
+
+  // import vlog
+  const { data: vlogData, isLoading: vlogLoading } = useQuery({
+    queryFn: fetchVlogs,
+    queryKey: QueryKeys.vlog,
+  });
+
+  // import certificate
+  const { data: certificateData, isLoading: certificateLoading } = useQuery({
+    queryFn: fetchCertificates,
+    queryKey: QueryKeys.certificate,
+  });
+
+  if (blogLoading || vlogLoading || certificateLoading) {
+    return (
+      <Grid align="center" sx={{ marginTop: "10px" }}>
+        <CircularProgress sx={{ color: "#20209f" }} />
+      </Grid>
+    );
+  }
+
+  if (blogLoading) {
+    return (
+      <Grid align="center" sx={{ marginTop: "10px" }}>
+        <CircularProgress sx={{ color: "#20209f" }} />
+      </Grid>
+    );
+  }
 
   return (
     <Box data-aos="fade">
@@ -44,7 +77,7 @@ const Dashboard = ({ token }) => {
         <Box sx={{ width: "100%" }}>
           <Header
             title="DASHBOARD"
-            subtitle={token && `Welcome ${token.user.email}`}
+            subtitle={`Welcome ${user ? user.account.name : "Admin"}`}
           />
           <Box
             display="grid"
@@ -54,7 +87,7 @@ const Dashboard = ({ token }) => {
             flexWrap="wrap"
           >
             <StatsBox
-              total={0}
+              total={blogData?.length}
               name="Total Blog"
               to="/add-blog"
               icon={
@@ -67,7 +100,7 @@ const Dashboard = ({ token }) => {
               }
             />
             <StatsBox
-              total={0}
+              total={vlogData?.length}
               name="Total Vlog"
               to="/add-vlog"
               icon={
@@ -80,7 +113,7 @@ const Dashboard = ({ token }) => {
               }
             />
             <StatsBox
-              total={0}
+              total={certificateData?.length}
               name="Total Certificate"
               to="/add-certificate"
               icon={

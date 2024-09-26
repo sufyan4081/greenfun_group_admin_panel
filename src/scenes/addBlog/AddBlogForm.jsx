@@ -24,9 +24,10 @@ const initialValues = {
 
 const AddBlogForm = ({ formData }) => {
   const [selectedFile, setSelectedFileName] = useState([]);
-
+  const [selectedIndices, setSelectedIndices] = useState(null); // State to store selected image indic
   const queryClient = useQueryClient();
 
+  console.log("selectedIndices", selectedIndices);
   // post the data
   const createPostMutation = useMutation({
     mutationFn: createBlog,
@@ -86,6 +87,7 @@ const AddBlogForm = ({ formData }) => {
         formData.append("content", values.content);
         formData.append("headerTitle", values.headerTitle);
         formData.append("date", values.date);
+        formData.append("imageIndex", selectedIndices);
 
         if (values?.images) {
           values?.images?.forEach((file) => {
@@ -97,7 +99,8 @@ const AddBlogForm = ({ formData }) => {
         await createPostMutation.mutateAsync(formData);
       } else {
         const _id = values._id.toString();
-        await EditBlog(_id, values);
+        console.log("selectedIndices", selectedIndices);
+        await EditBlog(_id, values, selectedIndices); // Pass selectedIndices here
         queryClient.invalidateQueries({ queryKey: QueryKeys.blog });
         enqueueSnackbar("Blog Updated Successfully", {
           variant: "success",
@@ -352,7 +355,7 @@ const AddBlogForm = ({ formData }) => {
                 marginTop: "15px",
               }}
             >
-              {formData ? (
+              {selectedIndices === null && formData ? (
                 <ChooseMultipleImage
                   label="Upload image"
                   name="images"
@@ -360,7 +363,9 @@ const AddBlogForm = ({ formData }) => {
                   error={errors.images}
                   selectedFile={selectedFile && selectedFile}
                   setSelectedFileName={setSelectedFileName}
+                  setSelectedIndices={setSelectedIndices}
                   disabled={true}
+                  formData={true}
                 />
               ) : (
                 <ChooseMultipleImage
@@ -370,6 +375,9 @@ const AddBlogForm = ({ formData }) => {
                   error={errors.images}
                   selectedFile={selectedFile && selectedFile}
                   setSelectedFileName={setSelectedFileName}
+                  setSelectedIndices={setSelectedIndices}
+                  disabled={false}
+                  formData={false}
                 />
               )}
 

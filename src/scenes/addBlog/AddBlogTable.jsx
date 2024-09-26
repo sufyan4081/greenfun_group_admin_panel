@@ -194,13 +194,11 @@ const AddBlogTable = ({ blogData, allData }) => {
             item.images.length > 0
           ) {
             return item?.images?.map((item, i) => (
-              <Tooltip title={item.title}>
-                <img
-                  src={item[col.name.toLowerCase()]}
-                  alt={item.title}
-                  style={{ width: "50px", height: "50px" }}
-                />
-              </Tooltip>
+              <img
+                src={item[col.name.toLowerCase()]}
+                alt={item.title}
+                style={{ width: "50px", height: "50px" }}
+              />
             ));
           } else {
             return "No data available";

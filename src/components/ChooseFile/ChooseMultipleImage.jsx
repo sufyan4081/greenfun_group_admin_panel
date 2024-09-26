@@ -1,5 +1,12 @@
-import React from "react";
-import { Box, Button, FormHelperText, Typography } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  FormHelperText,
+  Typography,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 const ChooseMultipleImage = ({
@@ -9,13 +16,26 @@ const ChooseMultipleImage = ({
   setSelectedFileName,
   selectedFile,
   disabled,
+  setSelectedIndices, // New prop for selected indices
 }) => {
+  const [selectedIndex, setSelectedIndex] = useState(null); // State to store selected index
+
   const handleFileChange = (e) => {
     const selectedFiles = e.currentTarget.files;
     if (selectedFiles) {
       const filesArray = Array.from(selectedFiles); // Convert FileList to array
       formik.setFieldValue(name, filesArray); // Set the images array in formik values
       setSelectedFileName(filesArray.map((file) => file.name)); // Update the selected file names in state
+    }
+  };
+
+  const handleCheckboxChange = (index) => {
+    if (selectedIndex === index) {
+      setSelectedIndex(null); // Uncheck the current checkbox
+      setSelectedIndices(null); // No selected index
+    } else {
+      setSelectedIndex(index); // Select the new checkbox
+      setSelectedIndices(index); // Pass the selected index to the parent component
     }
   };
 
@@ -45,19 +65,27 @@ const ChooseMultipleImage = ({
           </Button>
         </Box>
 
-        {/* Display Selected File Names */}
+        {/* Display Selected File Names with Checkboxes */}
         <Box>
           {selectedFile && selectedFile.length > 0 ? (
-            <Typography style={{ margin: "5px 0" }}>
-              You have selected: {selectedFile.length} file(s)
-              <br />
+            <Box>
+              <Typography style={{ margin: "5px 0" }}>
+                You have selected: {selectedFile.length} file(s)
+              </Typography>
               {selectedFile.map((file, index) => (
-                <span key={index}>
-                  {index + 1}. {file}
-                  {", "}
-                </span>
+                <Box key={index} display="flex" alignItems="center">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={selectedIndex === index} // Only one checkbox is checked
+                        onChange={() => handleCheckboxChange(index)}
+                      />
+                    }
+                    label={`${index + 1}. ${file}`}
+                  />
+                </Box>
               ))}
-            </Typography>
+            </Box>
           ) : null}
         </Box>
 

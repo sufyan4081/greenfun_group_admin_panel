@@ -16,8 +16,7 @@ export const addCertificateCol = [
   { name: "Title" },
   { name: "Date" },
   { name: "Code" },
-  { name: "Image" },
-  { name: "Actions" },
+  { name: "Images" },
 ];
 
 export const profileList = [
