@@ -112,7 +112,7 @@ function Navbar(props) {
               variant="h4"
               sx={{ textDecoration: "none", color: "black" }}
             >
-              Greenfun
+              Greenfun Foundation
             </Typography>
           </Box>
           {/* Navigation items */}
