@@ -177,5 +177,4 @@ export default Navbar;
 export const navItems = [
   { name: "Blog", link: "/add-blog" },
   { name: "Vlog", link: "/add-vlog" },
-  { name: "Certificate", link: "/add-certificate" },
 ];

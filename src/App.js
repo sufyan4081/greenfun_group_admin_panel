@@ -10,7 +10,6 @@ import "aos/dist/aos.css";
 import Navbar from "./scenes/global/Navbar";
 import AddBlog from "./scenes/addBlog/AddBlog";
 import AddVlog from "./scenes/addVlog/AddVlog";
-import AddCertificate from "./scenes/addCertificate/AddCertificate";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Login from "./scenes/login/Login";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
@@ -63,12 +62,6 @@ function App() {
 
                     {/* vlog routes */}
                     <Route path="/add-vlog" element={<AddVlog />} />
-
-                    {/* certificate routes */}
-                    <Route
-                      path="/add-certificate"
-                      element={<AddCertificate />}
-                    />
                   </Route>
                 </Routes>
               </main>

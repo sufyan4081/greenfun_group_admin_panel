@@ -2,13 +2,11 @@ import { Box, CircularProgress, Grid } from "@mui/material";
 import StatsBox from "./StatsBox";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
-import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import Header from "../../components/Header";
 import { QueryKeys } from "../../utils/QueryKey";
 import { fetchBlogs } from "../../api/Blog/blog_api";
 import { useQuery } from "@tanstack/react-query";
 import { fetchVlogs } from "../../api/Vlog/vlog_api";
-import { fetchCertificates } from "../../api/Certificate/certificate_api";
 import { useSelector } from "react-redux";
 
 const Dashboard = () => {
@@ -27,13 +25,7 @@ const Dashboard = () => {
     queryKey: QueryKeys.vlog,
   });
 
-  // import certificate
-  const { data: certificateData, isLoading: certificateLoading } = useQuery({
-    queryFn: fetchCertificates,
-    queryKey: QueryKeys.certificate,
-  });
-
-  if (blogLoading || vlogLoading || certificateLoading) {
+  if (blogLoading || vlogLoading) {
     return (
       <Grid align="center" sx={{ marginTop: "10px" }}>
         <CircularProgress sx={{ color: "#20209f" }} />
@@ -105,19 +97,6 @@ const Dashboard = () => {
               to="/add-vlog"
               icon={
                 <AddAPhotoIcon
-                  style={{
-                    color: "white",
-                    fontSize: "45px",
-                  }}
-                />
-              }
-            />
-            <StatsBox
-              total={certificateData?.length}
-              name="Total Certificate"
-              to="/add-certificate"
-              icon={
-                <CardMembershipIcon
                   style={{
                     color: "white",
                     fontSize: "45px",
