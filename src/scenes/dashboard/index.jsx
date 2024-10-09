@@ -56,7 +56,6 @@ const Dashboard = () => {
             xs: "column",
           },
           width: "100%",
-          mt: 12,
           padding: {
             lg: "0px 0px 0px 20px",
             md: "0px 0px 0px 20px",
@@ -87,6 +86,7 @@ const Dashboard = () => {
                   style={{
                     fontSize: "45px",
                     color: "white",
+                    marginBottom: "0px",
                   }}
                 />
               }

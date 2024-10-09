@@ -3,6 +3,9 @@
     color: white;
 } */
 
+ol,ul{
+  padding-left: 0px !important;
+}
 .ps-sidebar-container css-dip3t8 {
   background-color:green;
 }
@@ -28,20 +31,20 @@
   text-decoration: none;
 }
 .active-link:hover {
-  background-color: lightgreen !important;
+  background-color: navy !important;
   color: white !important;
 }
 
 .sidebar-list-item {
-  transform: translateX(0);
-  transform-origin: left; 
+  transform: translateY(0);
   transition: transform 0.2s cubic-bezier(0.42, 0, 0.58, 1); /* Adjust the cubic-bezier values */
 }
 
 .sidebar-list-item:hover {
-  transform: translateX(
-    10px
-  ); 
+  transform: translateY(
+    5px
+  
+  );
 }
 
 /* Add this to your style.css or a separate CSS file */

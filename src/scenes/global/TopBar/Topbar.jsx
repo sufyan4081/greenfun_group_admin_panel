@@ -1,98 +1,21 @@
 import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
-  Collapse,
-  Divider,
-  IconButton,
-  List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Popover,
   useTheme,
 } from "@mui/material";
-import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import { Link, Routes, useLocation, useRouteMatch } from "react-router-dom";
-import SearchIcon from "@mui/icons-material/Search";
+import { Link, useLocation } from "react-router-dom";
 import ProfileIcon from "../UserProfile/ProfileIcon";
-import SettingIcon from "../setting/SettingIcon";
-import {
-  SettingDropdown,
-  screensData,
-  settingDropdown,
-  sideBarList,
-} from "../../../data/mockData";
+import { sideBarList } from "../../../data/mockData";
 import SearchForm from "../../../components/SearchForm";
-import { ColorModeContext } from "../../../theme";
-import { ExpandLess, ExpandMore } from "@material-ui/icons";
-import ErrorPage from "../ErrorPage/ErrorPage";
-
-const SubDropdown = ({
-  subDropdownData,
-  selectedDropdown,
-  handleDropdownClick,
-}) => (
-  <ListItem
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-    }}
-  >
-    {subDropdownData.map((subItem) => (
-      <div key={subItem.label}>
-        <ListItem
-          onClick={() => handleDropdownClick(subItem.label)}
-          style={{ cursor: "pointer" }}
-          sx={{ padding: "0px 30px 5px 32px" }}
-        >
-          <ListItemIcon sx={{ minWidth: "30px" }}>{subItem.icon}</ListItemIcon>
-          <ListItemText>{subItem.label}</ListItemText>
-        </ListItem>
-      </div>
-    ))}
-  </ListItem>
-);
 
 const Topbar = () => {
-  const theme = useTheme();
-  const colorMode = useContext(ColorModeContext);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const design = true;
-  const [selectedDropdown, setSelectedDropdown] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const [openDropdown, setOpenDropdown] = useState({});
-  const [openSubDropdown, setOpenSubDropdown] = useState({}); // State for sub-dropdown
-
-  const toggleDropdown = (index) => {
-    setOpenDropdown((prevState) => ({
-      ...prevState,
-      [index]: !prevState[index],
-    }));
-  };
-
-  const toggleSubDropdown = (parentIndex, subIndex) => {
-    setOpenSubDropdown((prevState) => ({
-      ...prevState,
-      [parentIndex]: {
-        ...(prevState[parentIndex] || {}), // Ensure parent exists
-        [subIndex]: !prevState[parentIndex]?.[subIndex],
-      },
-    }));
-  };
-
-  const handleSettingsClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleSettingsClose = () => {
-    setAnchorEl(null);
-  };
-
-  const openSettings = Boolean(anchorEl);
 
   const handleFilter = () => {
     return sideBarList
@@ -132,10 +55,6 @@ const Topbar = () => {
   }
 
   // ----------------------------------------------------------------------------------------------
-
-  const handleDropdownClick = (label) => {
-    setSelectedDropdown((prev) => (prev === label ? null : label));
-  };
 
   return (
     <Box display="flex" justifyContent="space-between" p={2} height="65px">

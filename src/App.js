@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Dashboard from "./scenes/dashboard";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
@@ -14,14 +14,18 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Login from "./scenes/login/Login";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import UserProfile from "./scenes/global/UserProfile/UserProfile";
+import SideBarBox from "./scenes/global/Sidebar/SideBarBox";
+import Topbar from "./scenes/global/TopBar/Topbar";
 
 function App() {
+  const [isSidebar, setIsSidebar] = useState(true);
+  const location = useLocation();
+  const [theme, colorMode] = useMode();
+
   // for animation of page
   useEffect(() => {
     Aos.init({ duration: 1000 });
   }, []);
-
-  const [theme, colorMode] = useMode();
 
   const [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -30,6 +34,15 @@ function App() {
       setLoading(false);
     }, 2000);
   }, []);
+
+  // Check current routes and hide topBar
+  const isLoginPage = location.pathname === "/";
+  const forgotPage = location.pathname === "/forgot-password";
+
+  // Conditionally render the header based on the route
+  if (forgotPage || isLoginPage) {
+    return null; // Return null to hide the header
+  }
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -46,8 +59,9 @@ function App() {
             />
           ) : (
             <>
+              <SideBarBox isSidebar={isSidebar} />
               <main className="content" style={{ overflowY: "auto" }}>
-                <Navbar />
+                <Topbar setIsSidebar={setIsSidebar} />
                 <Routes>
                   <Route path="/" element={<Login />} />
                   <Route element={<ProtectedRoutes />}>

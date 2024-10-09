@@ -30,7 +30,7 @@ const AddBlog = () => {
   console.log("blogData", blogData);
   return (
     <>
-      <BreadCrumbs pageName="Add Blog" />
+      <BreadCrumbs pageName="Blog" title="Details" />
       <Box sx={{ margin: "100px 20px 0px 20px" }} data-aos="zoom-in">
         {/* import form */}
         <AddBlogForm />

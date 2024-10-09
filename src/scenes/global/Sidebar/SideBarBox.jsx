@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { Box, IconButton, Typography } from "@mui/material";
+import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
+import { Box, IconButton } from "@mui/material";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import SidebarItem from "./SidebarItem";
+import logo from "../../../assets/logo.png";
 
 const SideBarBox = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const location = useLocation();
-  // const [isLogin, setIsLogin] = useState(false)
 
   // Check if the current route is the login page
   const isLoginPage = location.pathname === "/";
@@ -17,39 +17,34 @@ const SideBarBox = () => {
 
   // Conditionally render the header based on the route
   if (isLoginPage || isForgotPage) {
-    // setIsLogin(true)
     return null; // Return null to hide the header
   }
-
-  // ------------------------------------------------------------------------------------
 
   return (
     <Box
       sx={{
         "& .pro-sidebar-inner": {
-          backgroundColor: "darkgreen !important", // Dark green for the entire sidebar
+          background: `rgb(45, 51, 89)`,
         },
         "& .pro-icon-wrapper": {
-          backgroundColor: "darkgreen !important", // Dark green for the icons
+          backgroundColor: "transparent !important",
         },
         "& .pro-inner-item": {
           padding: "0px !important",
         },
         "& .pro-inner-item:hover": {
-          color: "#fff !important", // White text on hover
-          backgroundColor: "lightgreen !important", // Light green background on hover
+          color: "#868dfb !important",
         },
         "& .pro-menu-item.active": {
-          color: "#fff !important", // White color for active items
+          color: "#6870fa !important",
         },
+        backgroundColor: "rgb(45, 51, 89) !important",
       }}
     >
-      <Sidebar
+      <ProSidebar
         collapsed={isCollapsed}
         style={{
-          backgroundColor: "darkgreen !important", // Dark green for the entire sidebar component
-          width: isCollapsed ? "55px" : "192px",
-          minWidth: "55px",
+          width: isCollapsed ? "44px" : "100%",
           height: "100vh",
         }}
       >
@@ -60,21 +55,29 @@ const SideBarBox = () => {
             icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
             style={{
               color: "white",
-              width: isCollapsed ? "47px" : "190px",
+              width: isCollapsed ? "42px" : "190px",
               transition: "width 0.2s",
-              padding: isCollapsed ? "0px 0px 0px 9px" : "0px 20px 0px 0px",
-              backgroundColor: "darkgreen", // Dark green for the menu item
+              padding: isCollapsed ? "15px 0px 0px 15px" : "0px 20px 0px 0px",
+              backgroundColor: "rgb(45, 51, 89)", // Dark green for the menu item
+              listStyleType: "none",
             }}
           >
             {!isCollapsed && (
               <Box
-                display="flex"
-                justifyContent="space-evenly"
-                alignItems="center"
+                sx={{
+                  pt: 1,
+                  display: "flex",
+                  justifyContent: isCollapsed ? "center" : "space-between",
+                  alignItems: "center",
+                }}
               >
-                <Link to={"/"} variant="h3">
-                  Greenfun
-                </Link>
+                {!isCollapsed && (
+                  <img
+                    src={logo}
+                    alt="green fun logo"
+                    style={{ width: "100px" }}
+                  />
+                )}
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon
                     style={{ color: "white", padding: "0px" }}
@@ -86,12 +89,12 @@ const SideBarBox = () => {
 
           <Box
             paddingLeft={isCollapsed ? undefined : "0%"}
-            style={{ padding: "0px" }}
+            style={{ paddingTop: "20px", margin: "0px" }}
           >
-            <SidebarItem />
+            <SidebarItem isCollapsed={isCollapsed} />
           </Box>
         </Menu>
-      </Sidebar>
+      </ProSidebar>
     </Box>
   );
 };

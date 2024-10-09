@@ -1,11 +1,8 @@
-import { Box, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 import React from "react";
-import { tokens } from "../../theme";
-import { Link } from "react-router-dom";
 import ArrowCircleRightIcon from "@mui/icons-material/ArrowCircleRight";
+import { Link } from "react-router-dom";
 const StatsBox = ({ total, name, icon, to }) => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
   return (
     <Box
       sx={{
@@ -16,8 +13,8 @@ const StatsBox = ({ total, name, icon, to }) => {
           xs: "span 12",
         },
       }}
-      backgroundColor={colors.greenAccent[100]}
-      marginBottom="10px"
+      backgroundColor="rgb(45, 51, 89)"
+      marginBottom="14px"
       paddingTop="-15px"
     >
       <Box
@@ -52,7 +49,8 @@ const StatsBox = ({ total, name, icon, to }) => {
         display="flex"
         justifyContent="center"
         alignItems="baseline"
-        backgroundColor={colors.greenAccent[500]}
+        backgroundColor="grey"
+        margin="0px"
       >
         <Link
           to={to}

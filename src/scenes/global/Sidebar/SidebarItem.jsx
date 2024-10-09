@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import {
   Collapse,
   List,
@@ -7,12 +8,12 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { ExpandLess, ExpandMore } from "@material-ui/icons";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import "./style.css";
 import { sideBarList } from "../../../data/mockData";
 
-const SidebarItem = () => {
+const SidebarItem = ({ colors, isCollapsed }) => {
   const [openDropdown, setOpenDropdown] = useState({});
   const [openSubDropdown, setOpenSubDropdown] = useState({});
 
@@ -35,16 +36,52 @@ const SidebarItem = () => {
 
   return (
     <>
-      <Link to="/dashboard" style={{ textDecoration: "none", color: "white" }}>
+      <Link
+        to="/dashboard"
+        style={{
+          textDecoration: "none",
+          color: "white",
+        }}
+      >
         <ListItem className="active-link sidebar-list-item">
           <ListItemIcon style={{ color: "white", minWidth: "30px" }}>
             <HomeOutlinedIcon style={{ color: "white" }} />
           </ListItemIcon>
-          <ListItemText> Dashboard </ListItemText>
+          {!isCollapsed && <ListItemText> Dashboard </ListItemText>}
         </ListItem>
       </Link>
 
-      <List>
+      <Link
+        to="/add-blog"
+        style={{
+          textDecoration: "none",
+          color: "white",
+        }}
+      >
+        <ListItem className="active-link sidebar-list-item">
+          <ListItemIcon style={{ color: "white", minWidth: "30px" }}>
+            <AddCircleIcon style={{ color: "white" }} />
+          </ListItemIcon>
+          {!isCollapsed && <ListItemText> Add Blog </ListItemText>}
+        </ListItem>
+      </Link>
+
+      <Link
+        to="/add-vlog"
+        style={{
+          textDecoration: "none",
+          color: "white",
+        }}
+      >
+        <ListItem className="active-link sidebar-list-item">
+          <ListItemIcon style={{ color: "white", minWidth: "30px" }}>
+            <AddCircleIcon style={{ color: "white" }} />
+          </ListItemIcon>
+          {!isCollapsed && <ListItemText> Add Vlog </ListItemText>}
+        </ListItem>
+      </Link>
+
+      {/* <List>
         {sideBarList?.map((item, parentIndex) => (
           <div key={parentIndex}>
             <ListItem
@@ -181,7 +218,7 @@ const SidebarItem = () => {
             </Collapse>
           </div>
         ))}
-      </List>
+      </List> */}
     </>
   );
 };

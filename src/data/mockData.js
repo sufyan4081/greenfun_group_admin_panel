@@ -1,3 +1,5 @@
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+
 export const addBlogCol = [
   { name: "Title" },
   { name: "Description" },
@@ -22,4 +24,18 @@ export const addCertificateCol = [
 export const profileList = [
   { label: "Profile", link: "/profile" },
   { label: "Logout", link: "/" },
+];
+
+export const sideBarList = [
+  {
+    label: "Add Blog",
+    icon: <AddCircleIcon />,
+    link: "add-blog",
+  },
+  // 2nd list
+  {
+    label: "Add Vlog",
+    icon: <AddCircleIcon />,
+    link: "add-vlog",
+  },
 ];

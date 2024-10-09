@@ -136,7 +136,7 @@ const UserProfile = () => {
 
   return (
     <>
-      <Box m="100px 20px 0px 20px">
+      <Box m="0px 0px 0px 0px">
         <BreadCrumbs pageName="My Profile" title="Edit Profile" />
         <Box
           sx={{

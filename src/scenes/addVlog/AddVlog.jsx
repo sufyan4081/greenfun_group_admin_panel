@@ -29,7 +29,7 @@ const AddVlog = () => {
 
   return (
     <>
-      <BreadCrumbs pageName="Add Vlog" />
+      <BreadCrumbs pageName="Add Vlog" title="Details" />
       <Box sx={{ margin: "100px 20px 0px 20px" }} data-aos="zoom-in">
         {/* import form */}
         <AddVlogForm />
